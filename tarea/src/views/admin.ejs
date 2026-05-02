@@ -1,0 +1,140 @@
+<%- include('partials/header') %>
+<div class="container" style="margin-top: 30px;">
+    <h4>Panel de Administrador</h4>
+    <div class="card">
+        <div class="card-content">
+            <span class="card-title">Listado de Usuarios</span>
+            <table class="striped responsive-table">
+                <thead>
+                    <tr>
+                        <th>Foto</th>
+                        <th>Nombre Completo</th>
+                        <th>Email</th>
+                        <th>Roles</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table">
+                    <tr><td colspan="5">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div id="userModal" class="modal">
+    <div class="modal-content">
+        <h4 id="modal-title">Detalles del Usuario</h4>
+        <div class="row" style="margin-top: 20px;">
+            <div class="col s12 m4 center-align">
+                <img id="modal-avatar" src="" alt="Avatar" class="circle responsive-img" style="width:120px; height:120px; object-fit:cover; margin-bottom: 10px;">
+                <p><strong>Roles:</strong> <span id="modal-roles"></span></p>
+                <p><strong>Edad:</strong> <span id="modal-age"></span> años</p>
+            </div>
+            <div class="col s12 m8" style="font-size: 16px; line-height: 2;">
+                <p><strong>Email:</strong> <span id="modal-email"></span></p>
+                <p><strong>Teléfono:</strong> <span id="modal-phone"></span></p>
+                <p><strong>Fecha de Nacimiento:</strong> <span id="modal-birthdate"></span></p>
+                <p><strong>Dirección:</strong> <span id="modal-address"></span></p>
+                <p><strong>Registrado el:</strong> <span id="modal-created"></span></p>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-blue btn-flat">Cerrar</a>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const elems = document.querySelectorAll('.modal');
+        if (typeof M !== 'undefined') M.Modal.init(elems);
+    });
+
+    let allUsers = [];
+    const token = checkAuth(true); 
+
+    if(token) {
+        loadUsers();
+    }
+
+    function loadUsers() {
+        fetch('/api/users', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => {
+            if(res.status === 401 || res.status === 403) window.location.href = '/403';
+            return res.json();
+        })
+        .then(users => {
+            allUsers = users; 
+            const tbody = document.getElementById('users-table');
+            tbody.innerHTML = '';
+            users.forEach(u => {
+                const roles = u.roles.map(r => r.name).join(', ');
+                const avatar = u.url_profile || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+                tbody.innerHTML += `
+                    <tr>
+                        <td><img src="${avatar}" class="circle" style="width:40px;height:40px;object-fit:cover;"></td>
+                        <td>${u.name} ${u.lastName || ''}</td>
+                        <td>${u.email}</td>
+                        <td>${roles}</td>
+                        <td>
+                            <a href="#!" class="btn-small blue" onclick="viewDetails('${u._id}')">Detalles</a>
+                            <a href="#!" class="btn-small red" onclick="deleteUser('${u._id}')">Eliminar</a>
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+    }
+
+    function viewDetails(id) {
+        const u = allUsers.find(user => user._id === id);
+        if(!u) return;
+
+        document.getElementById('modal-title').innerText = `${u.name} ${u.lastName || ''}`;
+        document.getElementById('modal-avatar').src = u.url_profile || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+        document.getElementById('modal-email').innerText = u.email;
+        document.getElementById('modal-phone').innerText = u.phoneNumber || 'N/A';
+        document.getElementById('modal-age').innerText = u.age || 'N/A';
+        document.getElementById('modal-address').innerText = u.address || 'N/A';
+        document.getElementById('modal-roles').innerText = u.roles.map(r => r.name).join(', ');
+        
+        if (u.birthdate) {
+            document.getElementById('modal-birthdate').innerText = new Date(u.birthdate).toLocaleDateString();
+        } else {
+            document.getElementById('modal-birthdate').innerText = 'N/A';
+        }
+        
+        if (u.createdAt) {
+            document.getElementById('modal-created').innerText = new Date(u.createdAt).toLocaleDateString();
+        } else {
+            document.getElementById('modal-created').innerText = 'N/A';
+        }
+
+        const instance = M.Modal.getInstance(document.getElementById('userModal'));
+        instance.open();
+    }
+
+    async function deleteUser(id) {
+        if(!confirm('¿Estás seguro de que deseas eliminar a este usuario? Esta acción no se puede deshacer.')) return;
+        
+        try {
+            const res = await fetch('/api/users/' + id, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            
+            if(!res.ok) throw new Error(data.message || 'Error al eliminar usuario');
+            
+            if (typeof M !== 'undefined') M.toast({html: 'Usuario eliminado exitosamente', classes: 'green'});
+            loadUsers(); 
+        } catch (err) {
+            if (typeof M !== 'undefined') M.toast({html: err.message, classes: 'red'});
+        }
+    }
+</script>

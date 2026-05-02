@@ -1,0 +1,33 @@
+    </main>
+    <footer class="page-footer blue darken-2">
+        <div class="footer-copyright">
+            <div class="container">
+            © 2026 App Auth Express
+            </div>
+        </div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        function checkAuth(requireAdmin = false) {
+            const token = sessionStorage.getItem('token');
+            if(!token) {
+                window.location.href = '/signIn';
+                return null;
+            }
+            if(requireAdmin) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if(!payload.roles.includes('admin')) {
+                        window.location.href = '/403';
+                        return null;
+                    }
+                } catch(e) {
+                    window.location.href = '/signIn';
+                    return null;
+                }
+            }
+            return token;
+        }
+    </script>
+</body>
+</html>

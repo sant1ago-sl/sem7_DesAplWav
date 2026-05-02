@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Express Auth App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <nav class="blue darken-2">
+        <div class="nav-wrapper container">
+            <a href="/" class="brand-logo">App Auth</a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li id="nav-signin"><a href="/signIn">Iniciar Sesión</a></li>
+                <li id="nav-signup"><a href="/signUp">Registro</a></li>
+                <li id="nav-dashboard" class="hidden"><a href="/dashboard">Dashboard</a></li>
+                <li id="nav-admin" class="hidden"><a href="/admin">Panel Admin</a></li>
+                <li id="nav-profile" class="hidden"><a href="/profile">Mi Perfil</a></li>
+                <li id="nav-logout" class="hidden"><a href="#!" onclick="logout()">Salir</a></li>
+            </ul>
+        </div>
+    </nav>
+    <main>
+    <script>
+        function updateNav() {
+            const token = sessionStorage.getItem('token');
+            if(token) {
+                document.getElementById('nav-signin').classList.add('hidden');
+                document.getElementById('nav-signup').classList.add('hidden');
+                document.getElementById('nav-dashboard').classList.remove('hidden');
+                document.getElementById('nav-profile').classList.remove('hidden');
+                document.getElementById('nav-logout').classList.remove('hidden');
+                
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if(payload.roles.includes('admin')) {
+                        document.getElementById('nav-admin').classList.remove('hidden');
+                    }
+                } catch(e) {}
+            }
+        }
+        function logout() {
+            sessionStorage.removeItem('token');
+            window.location.href = '/signIn';
+        }
+        updateNav();
+    </script>

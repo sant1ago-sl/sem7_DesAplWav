@@ -1,0 +1,27 @@
+<%- include('partials/header') %>
+<div class="container" style="margin-top: 50px;">
+    <div class="card">
+        <div class="card-content">
+            <h4 id="welcome-title">Bienvenido</h4>
+            <p>Aquí están tus datos principales de acceso.</p>
+            <br>
+            <a href="/profile" class="btn blue">Ver mi perfil completo</a>
+        </div>
+    </div>
+</div>
+<%- include('partials/footer') %>
+<script>
+    const token = checkAuth();
+    if(token) {
+        fetch('/api/users/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => {
+            if(res.status === 401 || res.status === 403) logout();
+            return res.json();
+        })
+        .then(user => {
+            document.getElementById('welcome-title').innerText = `Bienvenido, ${user.name || 'Usuario'}`;
+        });
+    }
+</script>
