@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: auth-api
+    env: node
+    buildCommand: npm install
+    startCommand: node src/server.js
+    # Render automatically provides the PORT env var.
+    # Add your MongoDB connection string in the Render UI
+    # example: MONGODB_URI=mongodb+srv://USER:PASS@cluster0.mongodb.net/auth
