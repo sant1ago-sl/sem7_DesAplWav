@@ -7,6 +7,9 @@
     "start": "node src/server.js",
     "dev": "nodemon --watch src --exec node --experimental-specifier-resolution=node src/server.js"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "keywords": [],
   "author": "earevalo",
   "license": "ISC",
