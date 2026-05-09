@@ -43,15 +43,22 @@ app.use((err, req, res, next) => {
 app.use((req, res) => res.status(404).render('404'));
 
 const PORT = process.env.PORT || 3000;
+const MONGODB_URI = process.env.MONGODB_URI;
 
-mongoose.connect(process.env.MONGODB_URI, { autoIndex: true })
+if (!MONGODB_URI) {
+    console.error('❌ ERROR: MONGODB_URI no está definida en las variables de entorno.');
+    process.exit(1);
+}
+
+mongoose.connect(MONGODB_URI, { autoIndex: true })
     .then( async () => {
-        console.log('Mongo connected');
+        console.log('✅ Conexión exitosa a MongoDB');
         await seedRoles();
         await seedUsers();
-        app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));
+        app.listen(PORT, () => console.log(`🚀 Servidor corriendo en el puerto ${PORT}`));
     })
     .catch(err => {
-        console.error('Error al conectar con Mongo:', err);
+        console.error('❌ Error al conectar con MongoDB:', err.message);
+        console.error('Asegúrate de que la IP de Render esté permitida en MongoDB Atlas (Network Access).');
         process.exit(1);
     });
