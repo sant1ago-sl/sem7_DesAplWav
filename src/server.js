@@ -3,7 +3,11 @@ import dotenv from 'dotenv';
 import cors from "cors";
 import mongoose from 'mongoose';
 import path from 'path';
+import dns from 'dns';
 import { fileURLToPath } from 'url';
+
+// Forzar DNS de Google para evitar el error querySrv
+dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/users.routes.js';
